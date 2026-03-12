@@ -1037,6 +1037,214 @@
     height: 1px;
     background: var(--line);
   }
+
+  /* LINK ANCHOR */
+  .entry-link-url {
+    margin-bottom: 8px;
+  }
+  .link-anchor {
+    color: var(--accent);
+    font-size: 12px;
+    word-break: break-all;
+    text-decoration: none;
+    border-bottom: 1px dashed var(--accent-soft);
+    transition: color 0.15s;
+  }
+  .link-anchor:hover {
+    color: #a84f22;
+    border-bottom-style: solid;
+  }
+
+  /* AI STRUCTURED SUMMARY */
+  .ai-keypoints {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ai-keypoints li {
+    font-size: 12px;
+    color: var(--ink);
+    line-height: 1.7;
+    padding: 3px 0 3px 14px;
+    position: relative;
+    border-bottom: 1px solid var(--paper-dark);
+  }
+  .ai-keypoints li:last-child { border-bottom: none; }
+  .ai-keypoints li::before {
+    content: '·';
+    position: absolute;
+    left: 2px;
+    color: var(--accent-soft);
+    font-weight: bold;
+  }
+  .ai-conclusion {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: rgba(196,98,45,0.06);
+    border-left: 2px solid var(--accent-soft);
+    border-radius: 0 3px 3px 0;
+    font-size: 12px;
+    color: var(--ink);
+    line-height: 1.7;
+    font-style: italic;
+  }
+  .ai-conclusion-label {
+    font-size: 10px;
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 3px;
+  }
+
+  /* SIDEBAR GROUPS */
+  .group-header {
+    display: flex;
+    align-items: center;
+    padding: 6px 16px;
+    cursor: pointer;
+    color: #999;
+    font-size: 12px;
+    transition: color 0.15s;
+    gap: 6px;
+  }
+  .group-header:hover { color: var(--paper); }
+  .group-header .group-arrow {
+    font-size: 9px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .group-header.open .group-arrow { transform: rotate(90deg); }
+  .group-name {
+    flex: 1;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .group-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: #555;
+  }
+  .group-tags {
+    padding: 2px 12px 6px 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .group-tag-chip {
+    background: #222;
+    color: #888;
+    border-radius: 3px;
+    padding: 2px 7px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .group-tag-chip:hover, .group-tag-chip.active {
+    background: var(--accent);
+    color: var(--paper);
+  }
+  .group-delete-btn {
+    background: none;
+    border: none;
+    color: #444;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0 2px;
+    line-height: 1;
+    transition: color 0.15s;
+    flex-shrink: 0;
+  }
+  .group-delete-btn:hover { color: #e53e3e; }
+  .add-group-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    color: #555;
+    font-size: 11px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    width: 100%;
+    font-family: 'Noto Sans SC', sans-serif;
+    transition: color 0.15s;
+    text-align: left;
+  }
+  .add-group-btn:hover { color: #aaa; }
+
+  /* GROUP MODAL */
+  .group-modal-box {
+    background: var(--ink);
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    width: 360px;
+    max-width: 95vw;
+    position: relative;
+    color: var(--paper);
+  }
+  .group-modal-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: #888;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .group-modal-input {
+    width: 100%;
+    background: #2a2622;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: var(--paper);
+    font-family: 'Noto Sans SC', sans-serif;
+    outline: none;
+    margin-bottom: 12px;
+  }
+  .group-modal-input:focus { border-color: var(--accent-soft); }
+  .group-tag-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+  .group-tag-option {
+    background: #2a2622;
+    color: #999;
+    border-radius: 3px;
+    padding: 3px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+  .group-tag-option.selected {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  .group-modal-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .group-modal-btn {
+    padding: 7px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'Noto Sans SC', sans-serif;
+    border: none;
+  }
+  .group-modal-btn.primary { background: var(--accent); color: white; }
+  .group-modal-btn.secondary { background: #2a2622; color: #aaa; }
 </style>
 </head>
 <body>
@@ -1087,6 +1295,12 @@
       <div class="tag-list" id="sidebarTags">
         <span class="tag-chip muted">暂无标签</span>
       </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">自定义分组</div>
+      <div id="groupsList"></div>
+      <button class="add-group-btn" onclick="openGroupModal()">✚ 新建分组</button>
     </div>
   </nav>
 
@@ -1322,6 +1536,7 @@ window.onload = () => {
   updateStats();
   updateSidebarTags();
   renderInsightPanel();
+  renderGroups();
 };
 
 // ============ CAPTURE TABS ============
@@ -1607,29 +1822,32 @@ async function processWithAI(entry, prompt, imageBase64 = null) {
     const historyDigest = buildHistoryDigest(entry.id);
     const hasHistory = !!historyDigest;
 
-    const systemPrompt = `你是一个深度个人知识库助手，帮助用户发现自己思想中隐藏的关联和模式。
+     const systemPrompt = `你是一个深度个人知识库助手，帮助用户发现自己思想中隐藏的关联和模式。
 
 ${hasHistory ? `
 用户的历史记录摘要（按时间倒序）：
 ${historyDigest}
 
-` : ''}
-你的任务是分析用户输入的新内容，返回 JSON：
+` : ''}你的任务是分析用户输入的新内容，返回 JSON：
 {
   "summary": "一句话核心（20字内）",
-  "quotes": ["值得记住的观点或金句，15-30字", "..."],
+  "keypoints": [
+    "要点1：具体可操作的信息、数据、方法或结论，15-25字",
+    "要点2：同上",
+    "要点3：同上（如内容足够则提供）"
+  ],
+  "conclusion": "核心结论或实用建议，不要重复要点，要说出这些信息的实践意义或行动方向，20-40字",
   "tags": ["标签1", "标签2", "标签3"],
   ${hasHistory ? `"connections": [
     {
       "ref": "[N]",
-      "insight": "这两条内容的深层关联是什么，给出有启发性的洞察（30-50字，不要只说'都与XX有关'，要说出为什么这个关联值得注意）"
+      "insight": "这两条内容的深层关联是什么，给出有启发性的洞察（30-50字）"
     }
   ],
   "pattern": "如果发现用户反复关注某个主题或有某种思维倾向，在这里指出来（选填，30字内）"` : '"connections": [], "pattern": null'}
 }
 
-connections 最多返回 2 条，只挑真正有启发性的关联，不要强行关联。
-只返回 JSON，不要任何其他文字。`;
+要点要具体实用，不要泰泛空洞。如果是工具或方法类内容，要点应包含具体操作步骤或数据。connections 最多返回 2 条。只返回 JSON。`;
 
     const userContent = [];
     if (imageBase64) {
@@ -1870,11 +2088,19 @@ function renderEntry(entry) {
     originalHtml += `<img class="entry-img" src="${entry.imageData}" alt="截图">`;
   }
   if (entry.original) {
-    const isLong = entry.original.length > 120;
-    const collapseId = `orig-${id}`;
-    originalHtml += `<div class="entry-original${isLong ? ' collapsed' : ''}" id="${collapseId}">${escapeHtml(entry.original)}</div>`;
-    if (isLong) {
-      originalHtml += `<button class="collapse-btn" onclick="toggleCollapse('${collapseId}', this)">展开 ↓</button>`;
+    // For link type: render as clickable URL
+    if (entry.type === 'link') {
+      const url = entry.original.trim();
+      originalHtml += `<div class="entry-original entry-link-url">
+        <a href="${url}" target="_blank" rel="noopener noreferrer" class="link-anchor">${escapeHtml(url)}</a>
+      </div>`;
+    } else {
+      const isLong = entry.original.length > 120;
+      const collapseId = `orig-${id}`;
+      originalHtml += `<div class="entry-original${isLong ? ' collapsed' : ''}" id="${collapseId}">${escapeHtml(entry.original)}</div>`;
+      if (isLong) {
+        originalHtml += `<button class="collapse-btn" onclick="toggleCollapse('${collapseId}', this)">展开 ↓</button>`;
+      }
     }
   }
 
@@ -1890,19 +2116,40 @@ function renderEntry(entry) {
   // AI block
   let aiHtml = '';
   if (entry.aiResult) {
-    const quotes = (entry.aiResult.quotes || []).map(q =>
-      `<div class="ai-quote">${escapeHtml(q)}</div>`
-    ).join('');
+    // Support both old format (quotes) and new format (keypoints + conclusion)
+    const hasKeypoints = entry.aiResult.keypoints && entry.aiResult.keypoints.length > 0;
+    const hasQuotes = entry.aiResult.quotes && entry.aiResult.quotes.length > 0;
+
+    let contentHtml = '';
+    if (hasKeypoints) {
+      const kpItems = entry.aiResult.keypoints.map(kp =>
+        `<li>${escapeHtml(kp)}</li>`
+      ).join('');
+      contentHtml += `<ul class="ai-keypoints">${kpItems}</ul>`;
+      if (entry.aiResult.conclusion) {
+        contentHtml += `<div class="ai-conclusion">
+          <div class="ai-conclusion-label">实践建议</div>
+          ${escapeHtml(entry.aiResult.conclusion)}
+        </div>`;
+      }
+    } else if (hasQuotes) {
+      // Legacy format
+      contentHtml = entry.aiResult.quotes.map(q =>
+        `<div class="ai-quote">${escapeHtml(q)}</div>`
+      ).join('');
+    }
+
     const connections = (entry.connections || []).map(c =>
       `<div class="connection-item">
         <span class="connection-ref">${escapeHtml(c.ref)}</span>
         <span class="connection-insight">${escapeHtml(c.insight)}</span>
       </div>`
     ).join('');
+
     aiHtml = `<div class="ai-block">
       <div class="ai-label">AI · 提炼</div>
       <div class="ai-summary">${escapeHtml(entry.aiResult.summary || '')}</div>
-      ${quotes ? `<div class="ai-quotes">${quotes}</div>` : ''}
+      ${contentHtml}
       ${connections ? `<div class="connections-block"><div class="connections-label">🔗 认知连线</div>${connections}</div>` : ''}
     </div>`;
   }
@@ -2161,6 +2408,115 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// ============ CUSTOM GROUPS ============
+let groups = JSON.parse(localStorage.getItem('mindstream_groups') || '[]');
+// groups: [{ id, name, tags: [], open: bool }]
+
+function saveGroups() {
+  localStorage.setItem('mindstream_groups', JSON.stringify(groups));
+}
+
+function renderGroups() {
+  const el = document.getElementById('groupsList');
+  if (!el) return;
+  if (!groups.length) {
+    el.innerHTML = '';
+    return;
+  }
+  el.innerHTML = groups.map(g => {
+    // Count entries that have at least one tag in this group
+    const count = entries.filter(e =>
+      (e.tags || []).some(t => g.tags.includes(t))
+    ).length;
+    const tagsHtml = (g.tags || []).map(t =>
+      `<span class="group-tag-chip" onclick="filterTag('${t}')">${t}</span>`
+    ).join('');
+    return `<div>
+      <div class="group-header ${g.open ? 'open' : ''}" onclick="toggleGroup(${g.id})">
+        <span class="group-arrow">▶</span>
+        <span class="group-name">${escapeHtml(g.name)}</span>
+        <span class="group-count">${count}</span>
+        <button class="group-delete-btn" onclick="event.stopPropagation();deleteGroup(${g.id})">✕</button>
+      </div>
+      ${g.open ? `<div class="group-tags">${tagsHtml || '<span style="font-size:11px;color:#555;">暂无标签</span>'}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function toggleGroup(gid) {
+  const g = groups.find(x => x.id === gid);
+  if (g) { g.open = !g.open; saveGroups(); renderGroups(); }
+}
+
+function deleteGroup(gid) {
+  if (!confirm('确定删除这个分组？（不会删除标签和内容）')) return;
+  groups = groups.filter(x => x.id !== gid);
+  saveGroups();
+  renderGroups();
+  showToast('分组已删除');
+}
+
+function openGroupModal(editId = null) {
+  const existing = document.getElementById('groupModal');
+  if (existing) existing.remove();
+
+  const editGroup = editId ? groups.find(g => g.id === editId) : null;
+
+  // Collect all existing tags
+  const allTags = new Set();
+  entries.forEach(e => (e.tags || []).forEach(t => allTags.add(t)));
+  const selectedTags = new Set(editGroup ? editGroup.tags : []);
+
+  const tagOptions = [...allTags].map(t =>
+    `<span class="group-tag-option ${selectedTags.has(t) ? 'selected' : ''}" onclick="toggleGroupTagOption(this, '${t}')">${t}</span>`
+  ).join('');
+
+  const modal = document.createElement('div');
+  modal.id = 'groupModal';
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="group-modal-box">
+      <button onclick="document.getElementById('groupModal').remove()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#666;font-size:16px;cursor:pointer;">✕</button>
+      <div class="group-modal-title">${editGroup ? '编辑分组' : '新建分组'}</div>
+      <input class="group-modal-input" id="groupNameInput" placeholder="分组名称，如「工作方法」「读书笔记」" value="${editGroup ? escapeHtml(editGroup.name) : ''}">
+      <div style="font-size:11px;color:#666;margin-bottom:8px;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;">选择包含的标签</div>
+      ${allTags.size ? `<div class="group-tag-selector" id="groupTagSelector">${tagOptions}</div>` : '<div style="font-size:12px;color:#555;margin-bottom:12px;">请先添加一些内容并生成标签</div>'}
+      <div class="group-modal-footer">
+        <button class="group-modal-btn secondary" onclick="document.getElementById('groupModal').remove()">取消</button>
+        <button class="group-modal-btn primary" onclick="saveGroup(${editId || 'null'})">保存</button>
+      </div>
+    </div>
+  `;
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  document.body.appendChild(modal);
+  document.getElementById('groupNameInput').focus();
+}
+
+function toggleGroupTagOption(el, tag) {
+  el.classList.toggle('selected');
+}
+
+function saveGroup(editId) {
+  const name = document.getElementById('groupNameInput').value.trim();
+  if (!name) { showToast('请输入分组名称'); return; }
+  const selected = [...document.querySelectorAll('#groupTagSelector .group-tag-option.selected')]
+    .map(el => el.textContent);
+
+  if (editId) {
+    const g = groups.find(x => x.id === editId);
+    if (g) { g.name = name; g.tags = selected; }
+  } else {
+    groups.push({ id: Date.now(), name, tags: selected, open: true });
+  }
+  saveGroups();
+  renderGroups();
+  document.getElementById('groupModal').remove();
+  showToast(editId ? '分组已更新' : `分组「${name}」已创建`);
+}
+
+// Init groups on load
+window.addEventListener('load', () => { renderGroups(); }, { once: false });
 </script>
 </body>
 </html>
