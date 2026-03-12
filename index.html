@@ -880,6 +880,128 @@
     font-family: 'Noto Sans SC', sans-serif;
   }
 
+  /* COLLAPSE */
+  .entry-original {
+    position: relative;
+  }
+  .entry-original.collapsed {
+    max-height: 80px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  }
+  .collapse-btn {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--accent);
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .collapse-btn:hover { text-decoration: underline; }
+
+  /* CARD ACTIONS */
+  .card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .entry-card:hover .card-actions { opacity: 1; }
+  .card-action-btn {
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 3px 10px;
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Noto Sans SC', sans-serif;
+    transition: all 0.15s;
+  }
+  .card-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .card-action-btn.danger:hover { border-color: #e53e3e; color: #e53e3e; }
+
+  /* EDIT MODAL */
+  .modal-overlay {
+    position: fixed; top:0; left:0; right:0; bottom:0;
+    background: rgba(26,24,20,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200; backdrop-filter: blur(3px);
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-box {
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 24px;
+    width: 480px;
+    max-width: 95vw;
+    position: relative;
+  }
+  .modal-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .modal-close {
+    position: absolute; top: 14px; right: 16px;
+    background: none; border: none; font-size: 18px;
+    color: var(--muted); cursor: pointer;
+  }
+  .modal-label {
+    font-size: 11px; color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 6px; display: block;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .modal-textarea {
+    width: 100%; background: white; border: 1px solid var(--line);
+    border-radius: 4px; padding: 10px 12px;
+    font-family: 'Noto Sans SC', sans-serif; font-size: 13px;
+    color: var(--ink); resize: vertical; outline: none;
+    min-height: 80px; margin-bottom: 14px;
+  }
+  .modal-textarea:focus { border-color: var(--accent); }
+  .modal-input {
+    width: 100%; background: white; border: 1px solid var(--line);
+    border-radius: 4px; padding: 8px 12px;
+    font-family: 'Noto Sans SC', sans-serif; font-size: 13px;
+    color: var(--ink); outline: none; margin-bottom: 14px;
+  }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-footer {
+    display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px;
+  }
+  .modal-btn {
+    padding: 8px 18px; border-radius: 4px; font-size: 13px;
+    font-family: 'Noto Sans SC', sans-serif; cursor: pointer; border: none;
+  }
+  .modal-btn.primary { background: var(--accent); color: white; }
+  .modal-btn.secondary { background: none; border: 1px solid var(--line); color: var(--muted); }
+
+  /* VIDEO FETCH */
+  .video-hint {
+    font-size: 11px; color: var(--muted); margin-top: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .fetch-video-btn {
+    background: none; border: 1px solid var(--accent-soft);
+    border-radius: 3px; padding: 2px 8px; font-size: 11px;
+    color: var(--accent); cursor: pointer;
+    font-family: 'Noto Sans SC', sans-serif; transition: all 0.15s;
+  }
+  .fetch-video-btn:hover { background: var(--accent); color: white; }
+
   /* SCROLLBAR */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -1733,6 +1855,7 @@ function renderAll() {
 function renderEntry(entry) {
   const time = new Date(entry.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
   const typeLabels = { text: '对话', link: '链接', image: '截图', voice: '语音' };
+  const id = entry.id;
 
   if (entry.processing) {
     return `<div class="processing-card">
@@ -1741,27 +1864,41 @@ function renderEntry(entry) {
     </div>`;
   }
 
+  // Original content with collapse
   let originalHtml = '';
   if (entry.imageData) {
     originalHtml += `<img class="entry-img" src="${entry.imageData}" alt="截图">`;
   }
   if (entry.original) {
-    originalHtml += `<div class="entry-original">${escapeHtml(entry.original)}</div>`;
+    const isLong = entry.original.length > 120;
+    const collapseId = `orig-${id}`;
+    originalHtml += `<div class="entry-original${isLong ? ' collapsed' : ''}" id="${collapseId}">${escapeHtml(entry.original)}</div>`;
+    if (isLong) {
+      originalHtml += `<button class="collapse-btn" onclick="toggleCollapse('${collapseId}', this)">展开 ↓</button>`;
+    }
   }
 
+  // Video URL detection
+  const isVideoLink = entry.type === 'link' && entry.original &&
+    (entry.original.includes('youtube.com') || entry.original.includes('youtu.be') ||
+     entry.original.includes('bilibili.com') || entry.original.includes('b23.tv'));
+  const videoHint = isVideoLink && !(entry.videoTranscript) ?
+    `<div class="video-hint">🎬 视频内容无法自动抓取
+      <button class="fetch-video-btn" onclick="openVideoTranscript(${id})">手动粘贴字幕/文案</button>
+    </div>` : '';
+
+  // AI block
   let aiHtml = '';
   if (entry.aiResult) {
     const quotes = (entry.aiResult.quotes || []).map(q =>
       `<div class="ai-quote">${escapeHtml(q)}</div>`
     ).join('');
-
     const connections = (entry.connections || []).map(c =>
       `<div class="connection-item">
         <span class="connection-ref">${escapeHtml(c.ref)}</span>
         <span class="connection-insight">${escapeHtml(c.insight)}</span>
       </div>`
     ).join('');
-
     aiHtml = `<div class="ai-block">
       <div class="ai-label">AI · 提炼</div>
       <div class="ai-summary">${escapeHtml(entry.aiResult.summary || '')}</div>
@@ -1780,9 +1917,157 @@ function renderEntry(entry) {
       <span class="entry-time">${time}</span>
     </div>
     ${originalHtml}
+    ${videoHint}
     ${aiHtml}
     ${tagsHtml ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
+    <div class="card-actions">
+      <button class="card-action-btn" onclick="editEntry(${id})">✏ 编辑标签</button>
+      <button class="card-action-btn" onclick="reprocessEntry(${id})">↺ 重新处理</button>
+      <button class="card-action-btn danger" onclick="deleteEntry(${id})">✕ 删除</button>
+    </div>
   </div>`;
+}
+
+// ============ COLLAPSE ============
+function toggleCollapse(collapseId, btn) {
+  const el = document.getElementById(collapseId);
+  if (!el) return;
+  const isCollapsed = el.classList.contains('collapsed');
+  el.classList.toggle('collapsed');
+  btn.textContent = isCollapsed ? '收起 ↑' : '展开 ↓';
+}
+
+// ============ DELETE ============
+function deleteEntry(id) {
+  if (!confirm('确定删除这条记录？')) return;
+  entries = entries.filter(e => e.id !== id);
+  saveEntries();
+  renderAll();
+  updateStats();
+  updateSidebarTags();
+  refreshReview();
+  showToast('已删除');
+}
+
+// ============ EDIT TAGS ============
+function editEntry(id) {
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+  const currentTags = (entry.tags || []).join('、');
+  const currentSummary = entry.aiResult?.summary || '';
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'editModal';
+  modal.innerHTML = `
+    <div class="modal-box">
+      <button class="modal-close" onclick="document.getElementById('editModal').remove()">✕</button>
+      <div class="modal-title">✏ 编辑记录</div>
+      <label class="modal-label">摘要</label>
+      <input class="modal-input" id="editSummary" value="${escapeHtml(currentSummary)}">
+      <label class="modal-label">标签（用顿号或逗号分隔）</label>
+      <input class="modal-input" id="editTags" value="${escapeHtml(currentTags)}">
+      <div class="modal-footer">
+        <button class="modal-btn secondary" onclick="document.getElementById('editModal').remove()">取消</button>
+        <button class="modal-btn primary" onclick="saveEdit(${id})">保存</button>
+      </div>
+    </div>
+  `;
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  document.body.appendChild(modal);
+}
+
+function saveEdit(id) {
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+  const summary = document.getElementById('editSummary').value.trim();
+  const tagsRaw = document.getElementById('editTags').value;
+  const tags = tagsRaw.split(/[,，、\s]+/).map(t => t.trim()).filter(Boolean);
+  if (entry.aiResult) entry.aiResult.summary = summary;
+  entry.tags = tags;
+  saveEntries();
+  renderAll();
+  updateSidebarTags();
+  document.getElementById('editModal').remove();
+  showToast('已保存');
+}
+
+// ============ REPROCESS ============
+async function reprocessEntry(id) {
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+  entry.processing = true;
+  entry.aiResult = null;
+  entry.connections = [];
+  entry.tags = [];
+  saveEntries();
+  renderAll();
+
+  let prompt = '';
+  if (entry.type === 'link') {
+    prompt = `这是一个链接：${entry.original}
+
+请帮我：1）生成一句话摘要 2）提炼2-3个核心观点或金句 3）给出3-5个标签`;
+  } else {
+    prompt = `这是我记录的内容：
+
+${entry.original}
+
+请帮我：1）生成一句话摘要 2）提炼2-3个核心观点或值得记住的金句 3）给出3-5个标签（中文，简短）`;
+  }
+  await processWithAI(entry, prompt);
+}
+
+// ============ VIDEO TRANSCRIPT ============
+function openVideoTranscript(id) {
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'videoModal';
+  modal.innerHTML = `
+    <div class="modal-box">
+      <button class="modal-close" onclick="document.getElementById('videoModal').remove()">✕</button>
+      <div class="modal-title">🎬 粘贴视频内容</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7;">
+        B站：视频下方点「展开」→ 复制视频简介或字幕<br>
+        YouTube：点「...」→「显示字幕」→ 复制文字<br>
+        或者直接粘贴你觉得重要的片段文字
+      </p>
+      <label class="modal-label">视频文字内容</label>
+      <textarea class="modal-textarea" id="videoText" rows="6" placeholder="粘贴字幕、文案、摘要…"></textarea>
+      <div class="modal-footer">
+        <button class="modal-btn secondary" onclick="document.getElementById('videoModal').remove()">取消</button>
+        <button class="modal-btn primary" onclick="submitVideoTranscript(${id})">提交并让 AI 分析</button>
+      </div>
+    </div>
+  `;
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  document.body.appendChild(modal);
+}
+
+async function submitVideoTranscript(id) {
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+  const text = document.getElementById('videoText').value.trim();
+  if (!text) { showToast('请粘贴视频内容'); return; }
+
+  document.getElementById('videoModal').remove();
+  entry.videoTranscript = text;
+  entry.processing = true;
+  entry.aiResult = null;
+  entry.connections = [];
+  entry.tags = [];
+  saveEntries();
+  renderAll();
+
+  const prompt = `这是一个视频的内容文字（来源链接：${entry.original}）：
+
+${text}
+
+请帮我：1）生成一句话摘要 2）提炼2-3个核心观点或金句 3）给出3-5个标签（中文，简短）`;
+  await processWithAI(entry, prompt);
 }
 
 function escapeHtml(str) {
