@@ -1703,8 +1703,32 @@ async function submitEntry() {
 
   // AI process async
   let prompt = '';
+
   if (currentCapTab === 'link') {
-    prompt = `这是一个链接：${text}\n\n请基于链接内容（URL 结构等可推断信息）帮我：1）生成一句话摘要 2）提炼2-3个核心观点或金句 3）给出3-5个标签`;
+    const isVideo = text.includes('youtube.com') || text.includes('youtu.be') ||
+                    text.includes('bilibili.com') || text.includes('b23.tv');
+    const isWechat = text.includes('mp.weixin.qq.com') || text.includes('weixin.qq.com');
+
+    if (isVideo || isWechat) {
+      // Can't fetch these - save entry and ask user to paste content
+      entry.processing = false;
+      entry.needsContent = isVideo ? 'video' : 'wechat';
+      saveEntries();
+      renderAll();
+      setTimeout(() => openContentInput(entry.id), 400);
+      uploadedImageBase64 = null;
+      return;
+    }
+
+    // For normal articles, try Jina Reader to get full text
+    showToast('正在抓取文章内容…');
+    const fetched = await fetchViaJina(text);
+    if (fetched) {
+      prompt = `这是一篇文章的完整内容：\n\n${fetched}\n\n原始链接：${text}\n\n请帮我：1）生成一句话摘要 2）提炼2-3个核心观点或金句 3）给出3-5个标签`;
+    } else {
+      prompt = `这是一个链接：${text}\n\n（无法抓取页面内容）请仅根据链接域名和路径推断：1）可能的内容摘要 2）2-3个推测性观点（请注明「根据链接推测」） 3）3-5个标签`;
+    }
+
   } else if (currentCapTab === 'image') {
     prompt = text ? `这是一张截图，附注：${text}` : '这是一张截图';
   } else {
@@ -1713,6 +1737,79 @@ async function submitEntry() {
 
   await processWithAI(entry, prompt, uploadedImageBase64);
   uploadedImageBase64 = null;
+}
+
+// ============ JINA FETCH (for articles only) ============
+async function fetchViaJina(url) {
+  try {
+    const jinaUrl = `https://r.jina.ai/${encodeURIComponent(url)}`;
+    const resp = await fetch(jinaUrl, {
+      headers: { 'Accept': 'text/plain', 'X-Return-Format': 'text' },
+      signal: AbortSignal.timeout(9000)
+    });
+    if (resp.ok) {
+      const text = await resp.text();
+      const clean = text.replace(/\n{3,}/g, '\n\n').trim().slice(0, 4000);
+      if (clean.length > 200) return clean;
+    }
+  } catch (e) { /* silent fail */ }
+  return null;
+}
+
+// ============ CONTENT INPUT MODAL (video / wechat) ============
+function openContentInput(id) {
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+
+  const isVideo = entry.needsContent === 'video';
+  const title = isVideo ? '🎬 粘贴视频内容' : '💬 粘贴公众号正文';
+  const placeholder = isVideo ? '粘贴字幕、文案、视频简介...' : '在微信里打开文章，全选正文复制粘贴到这里...';
+  const hintText = isVideo
+    ? 'B站：复制视频简介 / 手动复制字幕<br>YouTube：点「...」→「显示字幕」→ 复制<br>或：粘贴你觉得值得记录的任意片段'
+    : '微信公众号不允许外部抓取。<br>请在微信里打开文章 → 长按全选正文 → 复制 → 粘贴到这里。';
+
+  const existing = document.getElementById('contentInputModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'contentInputModal';
+  modal.innerHTML = '<div class="modal-box">' +
+    '<button class="modal-close" onclick="document.getElementById('contentInputModal').remove()">✕</button>' +
+    '<div class="modal-title">' + title + '</div>' +
+    '<p style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.8;">' + hintText + '</p>' +
+    '<label class="modal-label">内容</label>' +
+    '<textarea class="modal-textarea" id="contentInputText" rows="7" placeholder="' + placeholder + '"></textarea>' +
+    '<div class="modal-footer">' +
+    '<button class="modal-btn secondary" onclick="document.getElementById('contentInputModal').remove()">稍后再说</button>' +
+    '<button class="modal-btn primary" onclick="submitContentInput(' + id + ')">提交 → AI 分析</button>' +
+    '</div></div>';
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  document.body.appendChild(modal);
+  setTimeout(() => { const t = document.getElementById('contentInputText'); if(t) t.focus(); }, 100);
+}
+
+async function submitContentInput(id) {
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+  const textarea = document.getElementById('contentInputText');
+  const text = textarea ? textarea.value.trim() : '';
+  if (!text) { showToast('请先粘贴内容'); return; }
+
+  const savedType = entry.needsContent;
+  document.getElementById('contentInputModal').remove();
+  entry.videoTranscript = text;
+  entry.needsContent = null;
+  entry.processing = true;
+  entry.aiResult = null;
+  entry.connections = [];
+  entry.tags = [];
+  saveEntries();
+  renderAll();
+
+  const typeLabel = savedType === 'video' ? '视频' : '公众号文章';
+  const prompt = '这是一篇' + typeLabel + '的文字内容（来源：' + entry.original + '):\n\n' + text + '\n\n请帮我：1）生成一句话摘要 2）提炼2-3个核心观点或金句 3）给出3-5个标签（中文，简短）';
+  await processWithAI(entry, prompt);
 }
 
 // ============ UNIVERSAL AI CALLER ============
@@ -2082,6 +2179,24 @@ function renderEntry(entry) {
     </div>`;
   }
 
+  // Video/Wechat waiting for user to paste content
+  if (entry.needsContent && !entry.videoTranscript && !entry.aiResult) {
+    const typeIcon = entry.needsContent === 'video' ? '🎬' : '💬';
+    const typeText = entry.needsContent === 'video' ? '视频' : '公众号文章';
+    const btnText = entry.needsContent === 'video' ? '粘贴字幕 / 文案' : '粘贴文章正文';
+    const t2 = new Date(entry.timestamp).toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'});
+    return `<div class="entry-card">
+      <div class="entry-meta"><span class="entry-type">链接</span><span class="entry-time">${t2}</span></div>
+      <div class="entry-original collapsed">${escapeHtml(entry.original)}</div>
+      <div class="video-hint">${typeIcon} ${typeText}内容无法自动抓取
+        <button class="fetch-video-btn" onclick="openContentInput(${id})">${btnText}</button>
+      </div>
+      <div class="card-actions">
+        <button class="card-action-btn danger" onclick="deleteEntry(${id})">✕ 删除</button>
+      </div>
+    </div>`;
+  }
+
   // Original content with collapse
   let originalHtml = '';
   if (entry.imageData) {
@@ -2105,13 +2220,13 @@ function renderEntry(entry) {
   }
 
   // Video URL detection
-  const isVideoLink = entry.type === 'link' && entry.original &&
-    (entry.original.includes('youtube.com') || entry.original.includes('youtu.be') ||
-     entry.original.includes('bilibili.com') || entry.original.includes('b23.tv'));
-  const videoHint = isVideoLink && !(entry.videoTranscript) ?
-    `<div class="video-hint">🎬 视频内容无法自动抓取
-      <button class="fetch-video-btn" onclick="openVideoTranscript(${id})">手动粘贴字幕/文案</button>
-    </div>` : '';
+  // Content hint for video/wechat that needs manual input
+  let contentHint = '';
+  if (entry.needsContent === 'video' && !entry.videoTranscript) {
+    contentHint = `<div class="video-hint">🎬 视频内容无法自动抓取 <button class="fetch-video-btn" onclick="openContentInput(${id})">粘贴字幕 / 文案</button></div>`;
+  } else if (entry.needsContent === 'wechat' && !entry.videoTranscript) {
+    contentHint = `<div class="video-hint">💬 公众号内容无法自动抓取 <button class="fetch-video-btn" onclick="openContentInput(${id})">粘贴文章正文</button></div>`;
+  }
 
   // AI block
   let aiHtml = '';
@@ -2164,7 +2279,7 @@ function renderEntry(entry) {
       <span class="entry-time">${time}</span>
     </div>
     ${originalHtml}
-    ${videoHint}
+    ${contentHint}
     ${aiHtml}
     ${tagsHtml ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
     <div class="card-actions">
